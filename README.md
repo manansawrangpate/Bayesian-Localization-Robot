@@ -4,6 +4,20 @@ A Bayesian discrete-state localisation system for a TurtleBot3 Waffle Pi navigat
 
 ---
 
+## Background
+
+This simulation is a continuation of a physical ROB301 project originally implemented on a real TurtleBot3 Waffle Pi running **ROS1**. The Bayesian filter design, track layout, and state space are identical to the original — the differences are sensor calibration (real camera vs. Gazebo Harmonic Ogre2 renderer) and the migration to a **ROS2 Jazzy / Gazebo Harmonic** architecture.
+
+**Topological map (same for both physical and simulated versions):**
+
+![Track topology](docs/track_topology.png)
+
+📄 [Original Final Report](docs/final_report.pdf) — physical robot implementation, filter derivation, and results
+
+📸 [Photos of the physical robot](docs/photos/)
+
+---
+
 ## System Requirements
 
 - Ubuntu 24.04 (bare-metal or WSL2 with WSLg for GUI)
