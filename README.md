@@ -12,9 +12,10 @@ This simulation is a continuation of a physical ROB301 project originally implem
 
 ![Track topology](docs/track_topology.png)
 
-📄 [Original Final Report](docs/final_report.pdf) - physical robot implementation, filter derivation, and results
+[Original Final Report](docs/final_report.pdf) - physical robot implementation, filter derivation, and results
 
-📸 [Photos of the physical robot](docs/photos/)
+[Photos of the physical robot](docs/photos/)
+
 
 ---
 
@@ -193,7 +194,6 @@ Colour classification uses calibrated Ogre2 RGB thresholds.
 | Green  | `g > 130 and g > r×1.10 and g > b×1.10` |
 | Blue   | `b > 130 and b > r×1.20 and b > g×1.20` |
 
-The colour region of interest is the bottom 25% of the image (`COLOUR_ROW_START = 0.75`). 
 ---
 
 ## Spawn Position
