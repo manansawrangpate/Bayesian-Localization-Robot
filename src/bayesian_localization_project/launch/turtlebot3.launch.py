@@ -23,8 +23,8 @@ def generate_launch_description():
     # Use our local model so the camera pitch (pointed straight down) is tracked in git
     model_sdf = os.path.join(project_share, 'models', 'turtlebot3_waffle_pi', 'model.sdf')
 
-    x_pose = LaunchConfiguration('x_pose', default='0.0')
-    y_pose = LaunchConfiguration('y_pose', default='0.0')
+    x_pose = LaunchConfiguration('x_pose', default='0.6')
+    y_pose = LaunchConfiguration('y_pose', default='-1.6')
 
     return LaunchDescription([
         SetEnvironmentVariable('TURTLEBOT3_MODEL', 'waffle_pi'),
@@ -40,8 +40,8 @@ def generate_launch_description():
             os.path.join(project_share, 'models')
         ),
 
-        DeclareLaunchArgument('x_pose', default_value='0.0'),
-        DeclareLaunchArgument('y_pose', default_value='0.0'),
+        DeclareLaunchArgument('x_pose', default_value='0.6'),
+        DeclareLaunchArgument('y_pose', default_value='-1.6'),
 
         # Gazebo server (headless, runs physics)
         IncludeLaunchDescription(
@@ -89,14 +89,14 @@ def generate_launch_description():
             ]
         ),
 
-        # ROS-Gazebo bridge for non-image topics
+        # ROS-Gazebo bridge — uses official TurtleBot3 YAML which maps cmd_vel
+        # as TwistStamped (required by the DiffDrive plugin in Gazebo Harmonic)
         Node(
             package='ros_gz_bridge',
             executable='parameter_bridge',
             arguments=[
-                '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist',
-                '/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
-                '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+                '--ros-args', '-p',
+                f'config_file:={os.path.join(tb3_gazebo_share, "params", "turtlebot3_waffle_pi_bridge.yaml")}',
             ],
             output='screen'
         ),
