@@ -38,7 +38,6 @@ _BASE_COLOURS = [
     '#999999',  # traversal  grey
 ]
 
-CONFIDENCE_THRESHOLD = 0.60   # red dashed line
 
 
 class BeliefSubscriber(Node):
@@ -79,10 +78,6 @@ def main(args=None):
     bars = ax.bar(x, node.belief, color=_BASE_COLOURS,
                   edgecolor='#555555', linewidth=0.8, width=0.7)
 
-    # Confidence threshold line
-    ax.axhline(CONFIDENCE_THRESHOLD, color='#ff4444', linestyle='--',
-               linewidth=1.2, label=f'confidence threshold ({CONFIDENCE_THRESHOLD})')
-
     ax.set_xlim(-0.6, NUM_STATES - 0.4)
     ax.set_ylim(0, 1.05)
     ax.set_xticks(x)
@@ -93,8 +88,7 @@ def main(args=None):
     for spine in ax.spines.values():
         spine.set_edgecolor('#555555')
 
-    legend = ax.legend(facecolor='#333333', labelcolor='white', fontsize=8)
-    title  = ax.set_title('', color='white', fontsize=10, pad=8)
+    title  = ax.set_title('', color='white', fontsize=16, fontweight='bold', pad=12)
 
     # Probability labels above each bar (updated each frame)
     bar_labels = [
