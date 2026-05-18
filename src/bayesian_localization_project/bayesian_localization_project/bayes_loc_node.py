@@ -196,8 +196,8 @@ class BayesLocNode(Node):
         self._stop()
 
     def _deliver_mail(self, office: int):
-        self.get_logger().info(f'*** DELIVERING to office {office} — line-following 15s to centre ***')
-        end = time.time() + 15.0
+        self.get_logger().info(f'*** DELIVERING to office {office} — line-following 16s to centre ***')
+        end = time.time() + 16.0
         while time.time() < end and self._running:
             with self._lock:
                 line = self.cur_line
