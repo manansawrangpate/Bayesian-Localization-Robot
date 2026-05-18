@@ -2,3 +2,12 @@ build/
 install/
 log/
 
+__pycache__/
+*.pyc
+*.pyo
+
+# External ROS dependency packages — clone separately (see README)
+src/turtlebot3/
+src/turtlebot3_msgs/
+src/turtlebot3_simulations/
+src/DynamixelSDK/
