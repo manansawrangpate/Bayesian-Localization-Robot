@@ -20,7 +20,8 @@ def generate_launch_description():
     tb3_gazebo_share = get_package_share_directory('turtlebot3_gazebo')
 
     world = os.path.join(project_share, 'worlds', 'project_world.sdf')
-    model_sdf = os.path.join(tb3_gazebo_share, 'models', 'turtlebot3_waffle_pi', 'model.sdf')
+    # Use our local model so the camera pitch (pointed straight down) is tracked in git
+    model_sdf = os.path.join(project_share, 'models', 'turtlebot3_waffle_pi', 'model.sdf')
 
     x_pose = LaunchConfiguration('x_pose', default='0.0')
     y_pose = LaunchConfiguration('y_pose', default='0.0')
@@ -32,6 +33,11 @@ def generate_launch_description():
         AppendEnvironmentVariable(
             'GZ_SIM_RESOURCE_PATH',
             os.path.join(tb3_gazebo_share, 'models')
+        ),
+        # Also expose our models dir so Gazebo finds our custom waffle_pi model
+        AppendEnvironmentVariable(
+            'GZ_SIM_RESOURCE_PATH',
+            os.path.join(project_share, 'models')
         ),
 
         DeclareLaunchArgument('x_pose', default_value='0.0'),
