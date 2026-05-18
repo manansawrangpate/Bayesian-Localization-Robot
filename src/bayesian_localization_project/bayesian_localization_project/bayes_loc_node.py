@@ -196,10 +196,13 @@ class BayesLocNode(Node):
         self._stop()
 
     def _deliver_mail(self, office: int):
-        self.get_logger().info(f'*** DELIVERING to office {office} — driving forward 4s to centre ***')
+        self.get_logger().info(f'*** DELIVERING to office {office} — line-following 4s to centre ***')
         end = time.time() + 4.0
         while time.time() < end and self._running:
-            self._publish_twist(LINEAR_VEL, 0.0)
+            with self._lock:
+                line = self.cur_line
+            angular = KP * float(LINE_CENTRE - line)
+            self._publish_twist(LINEAR_VEL, angular)
             time.sleep(0.05)
         self._stop()
         time.sleep(2.0)
