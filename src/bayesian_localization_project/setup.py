@@ -24,6 +24,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'perception_node     = bayesian_localization_project.perception_node:main',
+            'bayes_loc_node      = bayesian_localization_project.bayes_loc_node:main',
+            'perception_test     = bayesian_localization_project.perception_test_node:main',
+            'belief_visualizer   = bayesian_localization_project.belief_visualizer:main',
         ],
     },
 )
