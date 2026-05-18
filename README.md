@@ -1,18 +1,18 @@
-# Galbraith Memorial Mail Robot — ROB301 Final Project
+# Galbraith Memorial Mail Robot - ROB301 Final Project
 
-A Bayesian discrete-state localisation system for a TurtleBot3 Waffle Pi navigating a simulated office building track. The robot uses a probabilistic filter to determine its position from colour observations alone, then delivers mail to target offices once localisation converges.
+This project aims to design a control system based on a Bayesian discrete-state localisation system for a TurtleBot3 Waffle Pi robot to navigate a closed-loop route and simulate mail delivery to arbitrarily chosen locations on that closed loop route. The robot uses a probabilistic filter to determine its position from colour observations alone, then delivers mail to target offices once localisation converges.
 
 ---
 
 ## Background
 
-This simulation is a continuation of a physical ROB301 project originally implemented on a real TurtleBot3 Waffle Pi running **ROS1**. The Bayesian filter design, track layout, and state space are identical to the original — the differences are sensor calibration (real camera vs. Gazebo Harmonic Ogre2 renderer) and the migration to a **ROS2 Jazzy / Gazebo Harmonic** architecture.
+This simulation is a continuation of a physical ROB301 project originally implemented on a real TurtleBot3 Waffle Pi running **ROS1**. The Bayesian filter design, track layout, and state space are identical to the original — the differences are sensor calibration (real camera vs. Gazebo Harmonic Ogre2 renderer) and the migration to a ROS2 Jazzy / Gazebo Harmonic architecture.
 
 **Topological map (same for both physical and simulated versions):**
 
 ![Track topology](docs/track_topology.png)
 
-📄 [Original Final Report](docs/final_report.pdf) — physical robot implementation, filter derivation, and results
+📄 [Original Final Report](docs/final_report.pdf) - physical robot implementation, filter derivation, and results
 
 📸 [Photos of the physical robot](docs/photos/)
 
@@ -34,7 +34,7 @@ mkdir -p ~/gazebo_projects/src
 cd ~/gazebo_projects
 
 # Clone this repo into the workspace root
-git clone <this-repo-url> .
+git clone https://github.com/manansawrangpate/Bayesian-Localization-Robot.git .
 
 # Clone TurtleBot3 dependencies (Jazzy branch)
 cd src
@@ -59,16 +59,16 @@ source install/setup.bash
 Open four terminals, each sourced with `source ~/gazebo_projects/install/setup.bash`:
 
 ```bash
-# Terminal 1 — Gazebo world + robot spawn
+# Terminal 1: Gazebo world + robot spawn
 ros2 launch bayesian_localization_project turtlebot3.launch.py
 
-# Terminal 2 — Camera perception (colour detection + line tracking)
+# Terminal 2: Camera perception (colour detection + line tracking)
 ros2 run bayesian_localization_project perception_node
 
-# Terminal 3 — Bayesian localisation + delivery controller
+# Terminal 3: Bayesian localisation + delivery controller
 ros2 run bayesian_localization_project bayes_loc_node
 
-# Terminal 4 (optional) — Live belief bar chart
+# Terminal 4: Live belief bar chart
 ros2 run bayesian_localization_project belief_visualizer
 ```
 
@@ -93,8 +93,6 @@ The world is a closed rectangular loop (~14 m perimeter) with 11 colour-coded of
 | 10          | 12     | Blue     | (-1.8, -1.0)     | Left lower  |
 | 11          | —      | —        | (corridors)      | Traversal   |
 
-The unique localisation anchor is the **Orange → Orange → Green → Blue** sequence on the right/top side (offices 5→6→7→8), which disambiguates the two identical Yellow → Green → Blue runs on the bottom and left sides.
-
 ---
 
 ## System Architecture
@@ -103,20 +101,20 @@ The unique localisation anchor is the **Orange → Orange → Green → Blue** s
 
 | Node | File | Role |
 |------|------|------|
-| `perception_node` | `perception_node.py` | Camera → colour classification + line centroid |
-| `bayes_loc_node` | `bayes_loc_node.py` | Bayesian filter + motion controller + delivery |
-| `belief_visualizer` | `belief_visualizer.py` | Live matplotlib belief bar chart (optional) |
+| `perception_node` | `perception_node.py` | Camera colour classification and line centre detection |
+| `bayes_loc_node` | `bayes_loc_node.py` | Bayesian filter + proportional line-following controller + delivery action |
+| `belief_visualizer` | `belief_visualizer.py` | Bar graph that shows belief distribution at any given time |
 
 ### Topics
 
 | Topic | Type | Direction |
 |-------|------|-----------|
-| `/camera/image_raw` | `sensor_msgs/Image` | Gazebo → perception |
-| `/mean_img_rgb` | `std_msgs/Float64MultiArray` | perception → bayes |
-| `/line_idx` | `std_msgs/UInt32` | perception → bayes |
-| `/cmd_vel` | `geometry_msgs/TwistStamped` | bayes → Gazebo |
-| `/belief` | `std_msgs/Float64MultiArray` | bayes → visualiser |
-| `/bayes_status` | `std_msgs/String` | bayes → visualiser |
+| `/camera/image_raw` | `sensor_msgs/Image` | Gazebo -> perception |
+| `/mean_img_rgb` | `std_msgs/Float64MultiArray` | perception -> bayes |
+| `/line_idx` | `std_msgs/UInt32` | perception -> bayes |
+| `/cmd_vel` | `geometry_msgs/TwistStamped` | bayes -> Gazebo |
+| `/belief` | `std_msgs/Float64MultiArray` | bayes -> visualiser |
+| `/bayes_status` | `std_msgs/String` | bayes -> visualiser |
 
 ---
 
@@ -124,7 +122,7 @@ The unique localisation anchor is the **Orange → Orange → Green → Blue** s
 
 ### State Space
 
-12 states: offices 2–12 (indices 0–10) + traversal (index 11). The robot knows the map but not its starting position — belief is initialised as a uniform prior (1/12 each).
+12 states: offices 2–12 (indices 0–10) + traversal (index 11). The robot knows the map but not its starting position and belief is initialised as a uniform prior (1/12 each).
 
 ### Transition Model
 
@@ -137,7 +135,7 @@ Office states form a **circular chain mod 11** (index 0 after index 10). Travers
 
 ### Measurement Model
 
-`p(z | true colour)` — columns represent the true colour of each state:
+`p(z | true colour)` columns represent the true colour of each state:
 
 | Observation | Blue | Green | Yellow | Orange | Traversal |
 |-------------|------|-------|--------|--------|-----------|
@@ -149,7 +147,7 @@ Office states form a **circular chain mod 11** (index 0 after index 10). Travers
 
 ### Belief Floor
 
-After every update, `belief = max(belief, 0.01)` is applied before renormalisation. This prevents any state from reaching exactly 0 (which would permanently eliminate it) and caps maximum belief at ~89% with 12 states, preserving uncertainty throughout the run.
+After every update, `belief = max(belief, 0.01)` is applied before renormalisation. This prevents any state from reaching exactly 0 (which would permanently eliminate it). 
 
 ### Predict / Update Trigger Logic
 
@@ -157,36 +155,36 @@ The filter uses a **corridor-freeze** strategy to avoid double-advancing the bel
 
 | Event | Filter action |
 |-------|--------------|
-| `colour → nothing` (entering corridor) | Predict once + update with 'nothing' |
-| Sustained `nothing` (mid-corridor) | **Freeze** — no predict, no update |
-| `nothing → colour` (exiting corridor) | Update only (predict already fired on entry) |
-| `colour_A → colour_B` (direct patch-to-patch) | Predict + update |
+| `colour -> nothing` (entering corridor) | Predict once + update with 'nothing' |
+| Sustained `nothing` (mid-corridor) | **Freeze** - no predict, no update |
+| `nothing -> colour` (exiting corridor) | Update only (predict already fired on entry) |
+| `colour_A -> colour_B` (direct patch-to-patch) | Predict + update |
 | Sustained same colour | Update only (reinforces current office) |
 
 ---
 
 ## Two-Phase Operation
 
-### Phase 1 — Exploration
+### 1 Exploration
 
-The robot drives a full lap before attempting any delivery. Exploration completes when **11 `nothing → colour` transitions** are counted (one per office entered), with a **240-second timeout** as a fallback for patches missed on tight corners.
+The robot drives a full lap before attempting any delivery. Exploration completes when 11 `nothing to colour` transitions are counted (one per office entered). 
 
-### Phase 2 — Delivery
+### 2 Delivery
 
-Once exploration is complete, the robot delivers mail to target offices (default: offices **6, 8, 10**). Delivery triggers when:
+Once exploration is complete, the robot delivers mail to target offices (default: offices 6, 8, 10). Delivery triggers when:
 
-- The MAP (most probable) estimate has been the **same office state for 8 consecutive frames** (~0.8 s at 10 Hz)
+- The MAP (most probable) estimate has been the same office state for 8 consecutive frames (~0.8 s at 10 Hz)
 - A colour is currently visible (not mid-corridor)
 
-On trigger, the robot **line-follows for 16 seconds** to reach the physical centre of the patch, then stops, rotates 90°, waits 1 s, rotates back, and drives forward briefly to simulate mail drop.
+On trigger, the robot line-follows for 16 seconds to reach the physical centre of the patch, then stops, rotates 90°, waits 1 s, rotates back, and drives forward briefly to simulate mail drop.
 
 ---
 
 ## Perception
 
-The camera is mounted with a **~80° downward pitch** (modified from the stock 26°) so it detects patches only when the robot is physically over them, preventing early delivery triggers.
+The camera is mounted with a ~80° downward pitch so it detects patches only when the robot is physically over them, preventing early delivery triggers.
 
-Colour classification uses calibrated Ogre2 RGB thresholds (Gazebo Harmonic's renderer shifts colours significantly from SDF diffuse values):
+Colour classification uses calibrated Ogre2 RGB thresholds.
 
 | Colour | Rule |
 |--------|------|
@@ -195,23 +193,21 @@ Colour classification uses calibrated Ogre2 RGB thresholds (Gazebo Harmonic's re
 | Green  | `g > 130 and g > r×1.10 and g > b×1.10` |
 | Blue   | `b > 130 and b > r×1.20 and b > g×1.20` |
 
-The colour region of interest is the **bottom 25%** of the image (`COLOUR_ROW_START = 0.75`). Only pixels with HSV saturation > 60 are counted; at least 100 saturated pixels must be present before a colour is reported.
-
+The colour region of interest is the bottom 25% of the image (`COLOUR_ROW_START = 0.75`). 
 ---
 
 ## Spawn Position
 
-Default: `(0.6, -1.6)` facing `+x` — midway along the bottom straight, testing cold-start localisation in an ambiguous corridor. Change `x_pose`, `y_pose`, and optionally `-Y` (yaw in radians) in `launch/turtlebot3.launch.py`.
+Default: `(0.6, -1.6)` facing `+x` midway along the bottom straight. For changing robot start position change `x_pose`, `y_pose`, and optionally `-Y` (yaw in radians) in `launch/turtlebot3.launch.py`.
 
 ---
 
 ## Live Visualiser
 
-The optional `belief_visualizer` node displays a live bar chart of the 12-state belief distribution:
+The `belief_visualizer` node displays a live bar chart of the 12-state belief distribution:
 
 - Bars are coloured to match each office's physical patch colour
 - The MAP estimate bar is highlighted with a white border
-- Low-probability bars are dimmed
 - The status line at the top shows current observation, MAP estimate, probability, confidence frame count, and operating mode
 
 ---
