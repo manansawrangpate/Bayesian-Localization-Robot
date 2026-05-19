@@ -12,6 +12,8 @@ This simulation is a continuation of a physical ROB301 project originally implem
 
 ![Track topology](docs/track_topology.png)
 
+[Simulation Demo](https://youtu.be/Y-dlipkhMvs)
+
 [Original Final Report](docs/final_report.pdf) - physical robot implementation, filter derivation, and results
 
 [Photos of the physical robot](docs/photos/)
